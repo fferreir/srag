@@ -1,6 +1,7 @@
 name: 1. Treinar e Salvar Modelo
 
 on:
+  # Permite que você execute este workflow manualmente a partir da aba "Actions"
   workflow_dispatch:
 
 jobs:
@@ -16,8 +17,10 @@ jobs:
           python-version: '3.12'
 
       - name: Download dos dados do GitHub Release
+        # 'run' e 'env' devem estar no mesmo nível de indentação
         run: |
           echo "Baixando dados..."
+          # --- !! ATUALIZE ESTAS DUAS LINHAS !! ---
           TAG_DO_RELEASE="dados-v1.0"
           NOME_DO_FICHEIRO_PARQUET="influenza_ML_2025-10-30_16-28-12.parquet"
           # ----------------------------------------
@@ -38,11 +41,11 @@ jobs:
       - name: Executar script de treino
         run: python treino_pipeline.py
 
-      - name: Upload do Artefato do Modelo (modelo_lgbm.joblib)
+      - name: Upload dos Artefatos (Modelo e Gráfico)
         # Salva o modelo treinado para que o outro workflow (Docker) o possa usar
         uses: actions/upload-artifact@v4
         with:
-          name: srag-model-artifact
+          name: srag-model-artifact # O nome do "pacote"
           path: |
             modelo_lgbm.joblib
             feature_importance.png
