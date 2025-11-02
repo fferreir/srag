@@ -4,6 +4,10 @@
 # Use a mesma versão do Python do seu ambiente de treino (3.12)
 FROM python:3.12-slim
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+
 # 2. Definir o diretório de trabalho dentro do container
 WORKDIR /app
 
