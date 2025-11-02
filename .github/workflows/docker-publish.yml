@@ -2,7 +2,7 @@ name: 2. Publicar Imagem Docker no GHCR
 
 on:
   workflow_run:
-    workflows: ["1. Treinar e Salvar Modelo"] # O 'name:' do seu train-model.yml
+    workflows: ["1. Treinar e Salvar Modelo"]
     types:
       - completed
     branches:
@@ -15,7 +15,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    # --- A CORREÇÃO ESTÁ AQUI ---
     permissions:
       contents: read      # Para o 'actions/checkout'
       packages: write     # Para publicar no GHCR
@@ -28,10 +27,16 @@ jobs:
       - name: Download do Artefato do Modelo (construído na Fase 1)
         uses: actions/download-artifact@v4
         with:
+          # Nome do "pacote" salvo pelo workflow de treino
           name: srag-model-artifact
+          # Diretório onde salvar (a raiz)
           path: .
-          # Este token agora terá a permissão 'actions: read'
+          # Token com permissão 'actions: read'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # --- A CORREÇÃO EXPLÍCITA ESTÁ AQUI ---
+          # Dizemos exatamente de qual 'run' descarregar
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Listar ficheiros (para depuração)
         run: |
@@ -51,6 +56,6 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/srag-modelo-lgbm:latest
-            ghcr.io/${{ github.repository_owner }}/srag-modelo-lgbm:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/srag-model-artifact:latest
+            ghcr.io/${{ github.repository_owner }}/srag-model-artifact:${{ github.sha }}
 
