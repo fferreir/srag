@@ -1,11 +1,8 @@
 name: 2. Publicar Imagem Docker no GHCR
 
-# --- ALTERAÇÃO DO GATILHO ---
-# Este workflow agora SÓ começa QUANDO o workflow "1. Treinar..."
-# (identificado pelo nome do seu ficheiro .yml) terminar com sucesso
 on:
   workflow_run:
-    workflows: ["1. Treinar e Salvar Modelo"] # <-- O 'name:' do seu train-model.yml
+    workflows: ["1. Treinar e Salvar Modelo"] # O 'name:' do seu train-model.yml
     types:
       - completed
     branches:
@@ -13,38 +10,33 @@ on:
 
 jobs:
   build_and_push:
-    # Apenas corre se o workflow de treino (que o ativou) foi bem-sucedido
+    # Apenas corre se o workflow de treino foi bem-sucedido
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     runs-on: ubuntu-latest
+
+    # --- A CORREÇÃO ESTÁ AQUI ---
     permissions:
-      contents: read
-      packages: write # Permissão para publicar no GHCR
+      contents: read      # Para o 'actions/checkout'
+      packages: write     # Para publicar no GHCR
+      actions: read       # PARA LER O ARTEFACTO DO WORKFLOW ANTERIOR
 
     steps:
       - name: Checkout do repositório (Código-fonte)
         uses: actions/checkout@v4
 
       - name: Download do Artefato do Modelo (construído na Fase 1)
-        # --- A CORREÇÃO (v4) ---
-        # A v4 irá automaticamente descarregar o artefacto
-        # do workflow que ativou este (o 'workflow_run')
         uses: actions/download-artifact@v4
         with:
-          # Nome do "pacote" salvo pelo workflow de treino
           name: srag-model-artifact
-          # Diretório onde salvar (a raiz, onde está o Dockerfile)
           path: .
-          # Não precisamos de 'workflow', 'branch', etc.
-          # O token é necessário para encontrar o 'workflow_run'
+          # Este token agora terá a permissão 'actions: read'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Listar ficheiros (para depuração)
         run: |
           echo "Verificando se todos os ficheiros estão aqui:"
           ls -lh
-          # Este comando deve mostrar:
-          # app.py, Dockerfile, requirements.txt, E modelo_lgbm.joblib
 
       - name: Login no GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
