@@ -31,24 +31,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Listar ficheiros (Antes de mover)
-        run: |
-          echo "Verificando estrutura de download:"
-          ls -lR
-          # O output aqui deve mostrar a pasta 'srag-model-artifact'
+      # O PASSO "MOVER FICHEIROS..." FOI REMOVIDO
+      # O passo de download já coloca os ficheiros na raiz ('.')
 
-      # --- NOVO PASSO DE CORREÇÃO ---
-      - name: Mover ficheiros do modelo para a raiz
+      - name: Listar ficheiros no contexto de build (para depuração)
         run: |
-          echo "Movendo ficheiros para o contexto de build..."
-          mv srag-model-artifact/modelo_lgbm.joblib .
-          mv srag-model-artifact/feature_importance.png .
-
-      - name: Listar ficheiros (Depois de mover)
-        run: |
-          echo "Verificando contexto de build final:"
+          echo "Verificando se todos os ficheiros estão aqui:"
           ls -lh
-          # Agora o 'modelo_lgbm.joblib' deve estar na raiz
+          # O output DEVE mostrar 'modelo_lgbm.joblib' aqui
 
       - name: Login no GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
