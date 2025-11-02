@@ -1,0 +1,48 @@
+name: 1. Treinar e Salvar Modelo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório (Código-fonte)
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download dos dados do GitHub Release
+        run: |
+          echo "Baixando dados..."
+          TAG_DO_RELEASE="dados-v1.0"
+          NOME_DO_FICHEIRO_PARQUET="influenza_ML_2025-10-30_16-28-12.parquet"
+          # ----------------------------------------
+
+          gh release download $TAG_DO_RELEASE --repo ${{ github.repository }} -p "$NOME_DO_FICHEIRO_PARQUET"
+
+          echo "Dados baixados com sucesso!"
+          ls -lh # Lista os ficheiros para confirmar que o .parquet está aqui
+        env:
+          # O GITHUB_TOKEN automático tem permissão para ler releases
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Instalar dependências Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Executar script de treino
+        run: python treino_pipeline.py
+
+      - name: Upload do Artefato do Modelo (modelo_lgbm.joblib)
+        # Salva o modelo treinado para que o outro workflow (Docker) o possa usar
+        uses: actions/upload-artifact@v4
+        with:
+          name: srag-model-artifact
+          path: |
+            modelo_lgbm.joblib
+            feature_importance.png

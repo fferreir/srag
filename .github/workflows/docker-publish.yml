@@ -1,34 +1,53 @@
-name: Publicar Imagem Docker no GHCR
+name: 2. Publicar Imagem Docker no GHCR
 
-# Isso faz o workflow rodar a cada push na branch 'main'
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] # Roda sempre que há um push para a 'main'
 
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write # Permissão para escrever no registry
+      packages: write # Permissão para publicar no GHCR
 
     steps:
-      - name: Checkout do repositório
+      - name: Checkout do repositório (Código-fonte)
         uses: actions/checkout@v4
 
-      - name: Login no GitHub Container Registry
+      - name: Download do Artefato do Modelo (modelo_lgbm.joblib)
+        uses: actions/download-artifact@v4
+        with:
+          # Nome do "pacote" salvo pelo workflow de treino
+          name: srag-model-artifact
+          # Diretório onde salvar (a raiz, onde está o Dockerfile)
+          path: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Nome DO FICHEIRO YML do workflow de treino
+          workflow: train-model.yml
+          workflow-conclusion: success
+          # Baixa o artefacto mais recente da branch 'main'
+          branch: main
+
+      - name: Listar ficheiros (para depuração)
+        run: |
+          echo "Verificando se todos os ficheiros estão aqui:"
+          ls -lh
+          # Este comando deve mostrar:
+          # app.py, Dockerfile, requirements.txt, E modelo_lgbm.joblib
+
+      - name: Login no GitHub Container Registry (GHCR)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }} # Usuário que iniciou o workflow
-          password: ${{ secrets.GITHUB_TOKEN }} # Token automático gerado pelo GitHub
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build e Push da Imagem
+      - name: Build e Push da Imagem Docker
         uses: docker/build-push-action@v5
         with:
-          context: . # Onde está o Dockerfile (na raiz)
+          context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/nome-da-sua-imagem:latest
-            ghcr.io/${{ github.repository_owner }}/nome-da-sua-imagem:${{ github.sha }} 
-            # (github.repository_owner é o dono, ex: 'seu_usuario_github')
+            ghcr.io/${{ github.repository_owner }}/srag-modelo-lgbm:latest
+            ghcr.io/${{ github.repository_owner }}/srag-modelo-lgbm:${{ github.sha }}
