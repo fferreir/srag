@@ -16,17 +16,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download do Artefato do Modelo (modelo_lgbm.joblib)
-        uses: actions/download-artifact@v4
+        # --- A CORREÇÃO ESTÁ AQUI ---
+        uses: actions/download-artifact@v3 # MUDADO DE v4 PARA v3
         with:
           # Nome do "pacote" salvo pelo workflow de treino
           name: srag-model-artifact
           # Diretório onde salvar (a raiz, onde está o Dockerfile)
           path: .
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Nome DO FICHEIRO YML do workflow de treino
+          # O 'github-token' não é necessário para a v3
+          # Os parâmetros abaixo SÃO válidos na v3
           workflow: train-model.yml
           workflow-conclusion: success
-          # Baixa o artefacto mais recente da branch 'main'
           branch: main
 
       - name: Listar ficheiros (para depuração)
