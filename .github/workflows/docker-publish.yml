@@ -1,0 +1,34 @@
+name: Publicar Imagem Docker no GHCR
+
+# Isso faz o workflow rodar a cada push na branch 'main'
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # Permissão para escrever no registry
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} # Usuário que iniciou o workflow
+          password: ${{ secrets.GITHUB_TOKEN }} # Token automático gerado pelo GitHub
+
+      - name: Build e Push da Imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Onde está o Dockerfile (na raiz)
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/nome-da-sua-imagem:latest
+            ghcr.io/${{ github.repository_owner }}/nome-da-sua-imagem:${{ github.sha }} 
+            # (github.repository_owner é o dono, ex: 'seu_usuario_github')
