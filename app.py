@@ -3,10 +3,8 @@ import joblib
 import pandas as pd
 from flask import Flask, request, jsonify
 import numpy as np
+from ml_utils import convert_to_string
 
-def convert_to_string(x):
-    """Converte a entrada para o tipo string, para o pipeline."""
-    return x.astype(str)
 
 # 1. Inicializar o App Flask
 app = Flask(__name__)

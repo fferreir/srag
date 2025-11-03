@@ -25,7 +25,7 @@ from sklearn.compose import ColumnTransformer
 import optuna
 import matplotlib.pyplot as plt
 import joblib
-
+from ml_utils import convert_to_string
 
 dados = pd.read_parquet('influenza_ML_2025-10-30_16-28-12.parquet')
 
@@ -208,9 +208,6 @@ colunas_quantitativas = ['IDADE',
  'DIAS_INTERNA_TOMO',
  'DIAS_SINT_INI_TOMO']
 
-def convert_to_string(x):
-    """Converte a entrada para o tipo string, para o pipeline."""
-    return x.astype(str)
 
 # ---
 # Bloco 2: DEFINIÇÃO DO PIPELINE
